@@ -7,12 +7,16 @@ puts 'Укажите путь к файлу'
 
 zip_file = STDIN.gets.chomp
 
-#time = Time.now
-
 Archive::Zip.extract("#{zip_file}", "unzipped")
 
-user_path = File.dirname(__FILE__) + "/unzipped/users.json"
+current_path = File.dirname(__FILE__)
 
-users_info = User.from_json(user_path)
+user_path = current_path + "/unzipped/users.json"
 
+#сusers_info = User.from_json(user_path)
+
+#Dir.glob(current_path + "/unzipped/general/*.json") do |file|
+#  messages = Message.from_json(file, user_path)
+#  puts messages.user
+#end
 
