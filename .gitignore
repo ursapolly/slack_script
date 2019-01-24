@@ -1,3 +1,5 @@
 .DS_Store
 .idea/
 *.zip
+/tmp
+slack_scripts_task.md
