@@ -1,0 +1,15 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    archive-zip (0.8.0)
+      io-like (~> 0.3.0)
+    io-like (0.3.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  archive-zip
+
+BUNDLED WITH
+   2.0.1

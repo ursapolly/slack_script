@@ -1,0 +1,12 @@
+class SlackThread
+  attr_reader :thread_ts, :messages
+
+  def initialize(thread_ts, messages)
+    @thread_ts = thread_ts
+    @message = messages
+  end
+
+  def to_s
+    "#{@thread_ts}: #{@messages}"
+  end
+end
