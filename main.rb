@@ -49,13 +49,14 @@ Dir.glob(current_path + '/tmp/unzipped/general/*.json') do |file|
   end
 end
 
-# Массив уникальных Thread_ts
-uniq_thread_ts = []
+# Уникальные Thread_ts
+uniq_thread_ts = messages.map(&:thread_ts).uniq
 
-messages.each do |el|
-  uniq_thread_ts << el.thread_ts
-  uniq_thread_ts.uniq!
-end
+# Массив тредов
+threads = []
 
-uniq_thread_ts.each do |item|
+uniq_thread_ts.each do |tts|
+  thread_messages = messages.select { |el| el.text if el.thread_ts == tts }
+  thread = SlackThread.new(tts, thread_messages)
+  threads << thread
 end

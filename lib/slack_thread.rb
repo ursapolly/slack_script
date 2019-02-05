@@ -3,7 +3,7 @@ class SlackThread
 
   def initialize(thread_ts, messages)
     @thread_ts = thread_ts
-    @message = messages
+    @messages = messages
   end
 
   def to_s
