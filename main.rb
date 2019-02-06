@@ -3,16 +3,19 @@ require_relative 'lib/user'
 require_relative 'lib/slack_thread'
 require 'archive/zip'
 require 'json'
+require 'csv'
+require 'optparse'
 
-# Получаем файлы из архива и сохраняем в папку
-puts 'Укажите путь к файлу'
+options = {}
 
-zip_file = STDIN.gets.chomp
+OptionParser.new do |opt|
+  opt.on('-p PATH', '--path PATH', 'Путь к файлу') { |o| options[:path] = o }
+end.parse!
 
-# Путь, где лежит проект
+zip_file = options[:path]
+
 current_path = File.dirname(__FILE__)
 
-# Получаем данные из архива
 Archive::Zip.extract(
     zip_file.to_s,
     current_path + '/tmp/unzipped',
@@ -20,13 +23,10 @@ Archive::Zip.extract(
     overwrite: :older
 )
 
-# Получаем путь к юзерам
 user_path = current_path + '/tmp/unzipped/users.json'
 
-# Читаем json-файл
 users_file = File.read(user_path, encoding: 'utf-8')
 
-# Получаем из него хеш со всеми данными
 users_hash = JSON.parse(users_file)
 
 # Массив юзеров
@@ -59,4 +59,9 @@ uniq_thread_ts.each do |tts|
   thread_messages = messages.select { |el| el.text if el.thread_ts == tts }
   thread = SlackThread.new(tts, thread_messages)
   threads << thread
+end
+
+# Сохраняем в CSV
+CSV.open('slack_threads.csv', 'w') do |csv|
+
 end
