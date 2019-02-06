@@ -3,3 +3,5 @@
 *.zip
 /tmp
 slack_scripts_task.md
+*.csv
+/config

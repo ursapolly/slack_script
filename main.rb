@@ -5,6 +5,8 @@ require 'archive/zip'
 require 'json'
 require 'csv'
 require 'optparse'
+require 'date'
+require 'yaml'
 
 options = {}
 
@@ -24,14 +26,11 @@ Archive::Zip.extract(
 )
 
 user_path = current_path + '/tmp/unzipped/users.json'
-
 users_file = File.read(user_path, encoding: 'utf-8')
-
 users_hash = JSON.parse(users_file)
 
 # Массив юзеров
 users = []
-
 users_hash.each do |el|
   usr = User.new(el['id'], el['real_name'])
   users << usr
@@ -39,7 +38,6 @@ end
 
 # Массив всех сообщений
 messages = []
-
 Dir.glob(current_path + '/tmp/unzipped/general/*.json') do |file|
   message_files = File.read(file, encoding: 'utf-8')
   message_hash = JSON.parse(message_files)
@@ -54,14 +52,23 @@ uniq_thread_ts = messages.map(&:thread_ts).uniq
 
 # Массив тредов
 threads = []
-
 uniq_thread_ts.each do |tts|
   thread_messages = messages.select { |el| el.text if el.thread_ts == tts }
   thread = SlackThread.new(tts, thread_messages)
   threads << thread
 end
 
-# Сохраняем в CSV
-CSV.open('slack_threads.csv', 'w') do |csv|
+headers = ['ts', 'real_name', 'text', 'count', 'slack_url', 'user_id']
 
+CSV.open('slack_threads.csv', 'wb', write_headers: true, headers: headers) do |csv|
+  yaml_data = YAML.load(File.read('config/config.yml'))
+  threads.each do |el|
+    ts = Time.at(el.thread_ts.to_i)
+    real_name = users.select { |rn| rn.real_name if rn.id == el.messages[0].user }
+    text = el.messages[0].text
+    count = el.messages.count
+    slack_url = yaml_data['slack_url']
+    user_id = el.messages[0].user
+    csv << [ts, real_name, text, count, slack_url, user_id]
+  end
 end
