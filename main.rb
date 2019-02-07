@@ -11,6 +11,12 @@ require 'yaml'
 options = {}
 
 OptionParser.new do |opt|
+  opt.banner = 'Usage: main.rb [options]'
+  opt.on('-h', 'Помощь') do
+    puts opt
+    exit
+  end
+
   opt.on('-p PATH', '--path PATH', 'Путь к файлу') { |o| options[:path] = o }
 end.parse!
 
@@ -58,17 +64,23 @@ uniq_thread_ts.each do |tts|
   threads << thread
 end
 
-headers = ['ts', 'real_name', 'text', 'count', 'slack_url', 'user_id']
+headers = %w(ts real_name text count slack_url user_id)
 
-CSV.open('slack_threads.csv', 'wb', write_headers: true, headers: headers) do |csv|
+CSV.open('slack_threads.csv', 'w', write_headers: true, headers: headers) do |csv|
   yaml_data = YAML.load(File.read('config/config.yml'))
-  threads.each do |el|
-    ts = Time.at(el.thread_ts.to_i)
-    real_name = users.select { |rn| rn.real_name if rn.id == el.messages[0].user }
-    text = el.messages[0].text
-    count = el.messages.count
-    slack_url = yaml_data['slack_url']
-    user_id = el.messages[0].user
-    csv << [ts, real_name, text, count, slack_url, user_id]
+  yaml_data['user_id'].each do |id|
+    real_name = users.select { |u| u if u.id == id }.first.real_name
+    user_id = id
+
+    threads.select do |el|
+      if el.messages[0].user == id
+        ts = Time.at(el.thread_ts.to_i).strftime('%d.%m.%Y %H:%M')
+        text = el.messages[0].text[0, 148]
+        count = el.messages.count
+        slack_url = "#{yaml_data['slack_url']}/#{id}/p#{el.thread_ts.gsub('.','')}"
+        csv << [ts, real_name, text, count, slack_url, user_id]
+      end
+    end
+
   end
 end

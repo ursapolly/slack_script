@@ -7,6 +7,6 @@ class SlackThread
   end
 
   def to_s
-    "#{@thread_ts}: #{@messages}"
+    "#{@thread_ts}"
   end
 end

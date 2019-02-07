@@ -8,6 +8,6 @@ class Message
   end
 
   def to_s
-    "#{@user}: #{@text}, #{@thread_ts}\n"
+    "#{@text}n"
   end
 end
