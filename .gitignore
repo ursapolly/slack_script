@@ -1,5 +1,6 @@
 .DS_Store
 .idea/
+/unzipped
 *.zip
 slack_scripts_task.md
 *.csv

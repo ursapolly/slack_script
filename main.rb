@@ -27,7 +27,7 @@ current_path = File.dirname(__FILE__)
 Archive::Zip.extract(
     zip_file.to_s,
     current_path + '/tmp/unzipped',
-    create: false,
+    create: true,
     overwrite: :older
 )
 
