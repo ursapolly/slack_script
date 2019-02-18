@@ -66,7 +66,7 @@ end
 
 headers = %w(ts real_name text count slack_url user_id)
 
-CSV.open('slack_threads.csv', 'w', write_headers: true, headers: headers) do |csv|
+CSV.open('tmp/threads/slack_threads.csv', 'w', write_headers: true, headers: headers) do |csv|
   yaml_data = YAML.load(File.read('config/config.yml'))
   yaml_data['user_id'].each do |id|
     real_name = users.select { |u| u if u.id == id }.first.real_name
@@ -84,3 +84,5 @@ CSV.open('slack_threads.csv', 'w', write_headers: true, headers: headers) do |cs
 
   end
 end
+
+puts 'Файл сохранён!'
