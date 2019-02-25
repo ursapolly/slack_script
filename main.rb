@@ -54,7 +54,7 @@ Dir.glob(current_path + '/tmp/unzipped/general/*.json') do |file|
 end
 
 # Уникальные Thread_ts
-uniq_thread_ts = messages.map(&:thread_ts).uniq
+uniq_thread_ts = messages.map(&:thread_ts).uniq.compact!
 
 # Массив тредов
 threads = []
@@ -64,25 +64,29 @@ uniq_thread_ts.each do |tts|
   threads << thread
 end
 
+csv_file = 'tmp/threads/slack_threads.csv'
 headers = %w(ts real_name text count slack_url user_id)
 
-CSV.open('tmp/threads/slack_threads.csv', 'w', write_headers: true, headers: headers) do |csv|
+CSV.open(csv_file, 'w', write_headers: true, headers: headers) do |csv|
   yaml_data = YAML.load(File.read('config/config.yml'))
   yaml_data['user_id'].each do |id|
-    real_name = users.select { |u| u if u.id == id }.first.real_name
     user_id = id
 
-    threads.select do |el|
-      if el.messages[0].user == id
+    threads.each do |el|
+      if el.user_attended?(id)
         ts = Time.at(el.thread_ts.to_i).strftime('%d.%m.%Y %H:%M')
+        real_name = users.select { |u| u if u.id == el.messages[0].user }.first.real_name
         text = el.messages[0].text[0, 148]
         count = el.messages.count
-        slack_url = "#{yaml_data['slack_url']}/#{id}/p#{el.thread_ts.gsub('.','')}"
+        slack_url = "#{yaml_data['slack_url']}/CE93E30QY/p#{el.thread_ts.gsub('.', '')}"
         csv << [ts, real_name, text, count, slack_url, user_id]
       end
     end
-
   end
 end
 
-puts 'Файл сохранён!'
+if File.exist?(csv_file)
+  puts 'Файл схранён в папку "tmp/threads"!'
+else
+  puts 'Что-то пошло не так...'
+end

@@ -6,6 +6,10 @@ class SlackThread
     @messages = messages
   end
 
+  def user_attended?(user_id)
+    self.messages.any? {|el| el.user == user_id}
+  end
+
   def to_s
     "#{@thread_ts}"
   end
