@@ -48,7 +48,7 @@ Dir.glob(current_path + '/tmp/unzipped/general/*.json') do |file|
   message_files = File.read(file, encoding: 'utf-8')
   message_hash = JSON.parse(message_files)
   message_hash.each do |el|
-    msg = Message.new(el['user'], el['text'], el['thread_ts'])
+    msg = Message.new(el['user'], el['text'], el['thread_ts'], el['ts'])
     messages << msg
   end
 end
@@ -76,7 +76,7 @@ CSV.open(csv_file, 'w', write_headers: true, headers: headers) do |csv|
       if el.user_attended?(id)
         ts = Time.at(el.thread_ts.to_i).strftime('%d.%m.%Y %H:%M')
         real_name = users.select { |u| u if u.id == el.messages[0].user }.first.real_name
-        text = el.messages[0].text[0, 148]
+        text = el.messages.select(&:first_message).first.text[0, 148]
         count = el.messages.count
         slack_url = "#{yaml_data['slack_url']}/CE93E30QY/p#{el.thread_ts.gsub('.', '')}"
         csv << [ts, real_name, text, count, slack_url, user_id]
