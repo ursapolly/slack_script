@@ -7,6 +7,7 @@ require 'csv'
 require 'optparse'
 require 'date'
 require 'yaml'
+require 'fileutils'
 
 options = {}
 
@@ -64,7 +65,10 @@ uniq_thread_ts.each do |tts|
   threads << thread
 end
 
-csv_file = 'tmp/threads/slack_threads.csv'
+Dir.glob(current_path + '/tmp/threads/*.csv') { |f| FileUtils.rm(f) }
+
+date = Time.now.strftime('saved_thread_%Y.%m.%d_%H:%M')
+csv_file = "tmp/threads/#{date}.csv"
 headers = %w(ts real_name text count slack_url user_id)
 
 CSV.open(csv_file, 'w', write_headers: true, headers: headers) do |csv|
@@ -73,10 +77,11 @@ CSV.open(csv_file, 'w', write_headers: true, headers: headers) do |csv|
     user_id = id
 
     threads.each do |el|
+      fm = el.messages.find(&:first_message)
       if el.user_attended?(id)
         ts = Time.at(el.thread_ts.to_i).strftime('%d.%m.%Y %H:%M')
-        real_name = users.select { |u| u if u.id == el.messages[0].user }.first.real_name
-        text = el.messages.select(&:first_message).first.text[0, 148]
+        real_name = users.select { |u| u if u.id == fm.user }.first.real_name
+        text = fm.text[0, 148]
         count = el.messages.count
         slack_url = "#{yaml_data['slack_url']}/CE93E30QY/p#{el.thread_ts.gsub('.', '')}"
         csv << [ts, real_name, text, count, slack_url, user_id]
@@ -84,6 +89,8 @@ CSV.open(csv_file, 'w', write_headers: true, headers: headers) do |csv|
     end
   end
 end
+
+FileUtils.remove_dir(current_path + '/tmp/unzipped')
 
 if File.exist?(csv_file)
   puts 'Файл схранён в папку "tmp/threads"!'
