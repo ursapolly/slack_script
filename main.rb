@@ -43,6 +43,8 @@ users_hash.each do |el|
   users << usr
 end
 
+users.reject! { |el| el.real_name == nil }
+
 # Массив всех сообщений
 messages = []
 Dir.glob(current_path + '/tmp/unzipped/general/*.json') do |file|
@@ -78,9 +80,14 @@ CSV.open(csv_file, 'w', write_headers: true, headers: headers) do |csv|
 
     threads.each do |el|
       fm = el.messages.find(&:first_message)
+      rn = users.select { |u| u if u.id == fm.user }.first
       if el.user_attended?(id)
         ts = Time.at(el.thread_ts.to_i).strftime('%d.%m.%Y %H:%M')
-        real_name = users.select { |u| u if u.id == fm.user }.first.real_name
+        real_name = case rn
+                    when nil then 'Имя недоступно'
+                    else
+                      rn.real_name
+                    end
         text = fm.text[0, 148]
         count = el.messages.count
         slack_url = "#{yaml_data['slack_url']}/CE93E30QY/p#{el.thread_ts.gsub('.', '')}"
